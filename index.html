@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4f46e5">
-<title>Okul Krokisi · Yön Bulma</title>
+<title>Gümüşhacıköy Hasan Coci Anadolu Lisesi · Yön Bulma</title>
 <style>
   :root{
     --bg:#eef2f7;
@@ -37,7 +37,7 @@
     display:flex;align-items:center;justify-content:center;
     font-size:24px;box-shadow:0 6px 16px -6px rgba(79,70,229,.7);
   }
-  .titles h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.3px}
+  .titles h1{margin:0;font-size:16px;font-weight:800;letter-spacing:-.3px}
   .titles p{margin:2px 0 0;font-size:12px;color:var(--muted);font-weight:500}
 
   /* ---------- CONTROLS ---------- */
@@ -91,12 +91,13 @@
   /* ---------- FLOOR TABS ---------- */
   .floor-tabs{
     max-width:900px;margin:6px auto 10px;padding:0 16px;
-    display:flex;gap:6px;background:transparent;
+    display:flex;gap:6px;background:transparent;overflow-x:auto;scrollbar-width:none;
   }
+  .floor-tabs::-webkit-scrollbar{display:none}
   .floor-tabs button{
-    flex:1;padding:11px;border-radius:12px;border:1px solid var(--border);
+    flex:1;min-width:80px;padding:11px;border-radius:12px;border:1px solid var(--border);
     background:var(--surface);color:var(--muted);font-family:inherit;
-    font-weight:700;font-size:13.5px;cursor:pointer;transition:.2s;
+    font-weight:700;font-size:13px;cursor:pointer;transition:.2s;white-space:nowrap;
   }
   .floor-tabs button.active{
     background:var(--primary);color:#fff;border-color:var(--primary);
@@ -208,7 +209,7 @@
 <header class="topbar">
   <div class="logo">🏫</div>
   <div class="titles">
-    <h1>Atatürk Ortaokulu</h1>
+    <h1>Gümüşhacıköy Hasan Coci Anadolu Lisesi</h1>
     <p>Okul Krokisi &amp; Yön Bulma Sistemi</p>
   </div>
 </header>
@@ -218,7 +219,7 @@
     <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
       <circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path>
     </svg>
-    <input id="search" type="search" placeholder="Sınıf, kantin, WC ara..." autocomplete="off">
+    <input id="search" type="search" placeholder="Sınıf, laboratuvar, WC ara..." autocomplete="off">
     <button class="clear" id="clearSearch" hidden>✕</button>
   </div>
   <div class="results" id="results" hidden></div>
@@ -226,8 +227,7 @@
 </div>
 
 <div class="floor-tabs" id="floorTabs">
-  <button data-floor="0" class="active">Zemin Kat</button>
-  <button data-floor="1">1. Kat</button>
+  <!-- Kat sekmeleri JS ile dinamik oluşturulacak -->
 </div>
 
 <div class="map-wrap">
@@ -250,7 +250,7 @@
 
 <script>
 /* =========================================================
-   1. VERİ
+   1. VERİ (Excel'den Çıkan Bilgilere Göre Düzenlendi)
    ========================================================= */
 const COLS = [50, 230, 410, 590, 770, 950];
 const ROW_TOP = { y0: 60,  y1: 330, cy: 195, door: 330 };
@@ -260,67 +260,81 @@ const ENTRY = [500, 710];
 const HUB_X = 500;
 
 const CATS = {
-  sinif:     { label:'Sınıflar',  bg:'#dbeafe', bd:'#bfdbfe', tx:'#1e40af' },
-  idari:     { label:'İdari',     bg:'#fae8ff', bd:'#f0d5f7', tx:'#86198f' },
-  yemek:     { label:'Yemek',     bg:'#fef3c7', bd:'#fde68a', tx:'#92400e' },
-  spor:      { label:'Spor',      bg:'#dcfce7', bd:'#bbf7d0', tx:'#166534' },
-  kutuphane: { label:'Kütüphane', bg:'#e0e7ff', bd:'#c7d2fe', tx:'#3730a3' },
-  wc:        { label:'WC',        bg:'#e2e8f0', bd:'#cbd5e1', tx:'#475569' },
-  saglik:    { label:'Sağlık',    bg:'#ffe4e6', bd:'#fecdd3', tx:'#9f1239' },
-  diger:     { label:'Diğer',     bg:'#f1f5f9', bd:'#e2e8f0', tx:'#475569' }
+  sinif:     { label:'Sınıflar',   bg:'#dbeafe', bd:'#bfdbfe', tx:'#1e40af' },
+  idari:     { label:'İdari',      bg:'#fae8ff', bd:'#f0d5f7', tx:'#86198f' },
+  yemek:     { label:'Kantin',     bg:'#fef3c7', bd:'#fde68a', tx:'#92400e' },
+  spor:      { label:'Spor',       bg:'#dcfce7', bd:'#bbf7d0', tx:'#166534' },
+  kutuphane: { label:'Kütüphane',  bg:'#e0e7ff', bd:'#c7d2fe', tx:'#3730a3' },
+  wc:        { label:'WC',         bg:'#e2e8f0', bd:'#cbd5e1', tx:'#475569' },
+  saglik:    { label:'Sağlık',     bg:'#ffe4e6', bd:'#fecdd3', tx:'#9f1239' },
+  lab:       { label:'Laboratuvar',bg:'#fef08a', bd:'#fde047', tx:'#854d0e' },
+  diger:     { label:'Diğer',      bg:'#f1f5f9', bd:'#e2e8f0', tx:'#475569' }
 };
 
+// Excel'de net olan yerler işaretlendi. Diğerleri standart lise düzenine göre yerleştirildi.
 const FLOORS = {
   0: {
     name: 'Zemin Kat',
     rooms: [
-      { id:'s101', name:'101 Sınıf', cat:'sinif', col:0, row:'top', icon:'📚',
-        desc:'5-A sınıfı dersliği. Sabah dersleri burada yapılıyor.' },
-      { id:'s102', name:'102 Sınıf', cat:'sinif', col:1, row:'top', icon:'📚',
-        desc:'5-B sınıfı dersliği.' },
-      { id:'kutuphane', name:'Kütüphane', cat:'kutuphane', col:2, row:'top', icon:'📖',
-        desc:'Kitap ödünç alma ve sessiz çalışma alanı. Hafta içi 08:30 – 16:00 açık.' },
-      { id:'mudur', name:'Müdür Odası', cat:'idari', col:3, row:'top', icon:'🗂️',
-        desc:'Okul idaresi. Görüşme için önceden randevu almanız önerilir.' },
-      { id:'lab', name:'Fen Laboratuvarı', cat:'sinif', col:4, row:'top', icon:'🔬',
-        desc:'Deney ve laboratuvar çalışmalarının yapıldığı sınıf.' },
+      { id:'s9a', name:'9/A Sınıfı', cat:'sinif', col:0, row:'top', icon:'📚', desc:'Zemin kat sınıfı.' },
+      { id:'s9b', name:'9/B Sınıfı', cat:'sinif', col:1, row:'top', icon:'📚', desc:'Zemin kat sınıfı.' },
+      { id:'mudur', name:'Müdür Odası', cat:'idari', col:2, row:'top', icon:'🗂️', desc:'Okul idaresi.' },
+      { id:'ogretmenler', name:'Öğretmenler Odası', cat:'idari', col:3, row:'top', icon:'☕', desc:'Öğretmenler dinlenme alanı.' },
+      { id:'kutuphane', name:'Kütüphane', cat:'kutuphane', col:4, row:'top', icon:'📖', desc:'Kitap ödünç alma alanı.' },
 
-      { id:'kantin', name:'Kantin', cat:'yemek', col:0, row:'bottom', icon:'🍽️',
-        desc:'Yiyecek ve içecek satış noktası. Teneffüs ve öğle aralarında açık.' },
-      { id:'wc0', name:'WC', cat:'wc', col:1, row:'bottom', icon:'🚻',
-        desc:'Kız ve erkek tuvaletleri. Zemin kat, ana koridor üzerinde.' },
-      { id:'giris', name:'Giriş Holü', cat:'diger', col:2, row:'bottom', icon:'🚪',
-        desc:'Ana giriş. Nöbetçi öğretmen masası ve ziyaretçi karşılama alanı.' },
-      { id:'revir', name:'Revir', cat:'saglik', col:3, row:'bottom', icon:'🩺',
-        desc:'Sağlık odası. İlk yardım ve acil durumlar için.' },
-      { id:'spor', name:'Spor Salonu', cat:'spor', col:4, row:'bottom', icon:'🏀',
-        desc:'Basketbol, voleybol ve beden eğitimi dersleri için kapalı salon.' }
+      { id:'kantin', name:'Kantin', cat:'yemek', col:0, row:'bottom', icon:'🍽️', desc:'Yiyecek ve içecek satış noktası.' },
+      { id:'wc0', name:'WC', cat:'wc', col:1, row:'bottom', icon:'🚻', desc:'Zemin kat tuvaletleri.' },
+      { id:'giris', name:'Giriş Holü', cat:'diger', col:2, row:'bottom', icon:'🚪', desc:'Ana giriş ve karşılama alanı.' },
+      { id:'revir', name:'Revir', cat:'saglik', col:3, row:'bottom', icon:'🩺', desc:'Sağlık odası.' },
+      { id:'spor', name:'Spor Salonu', cat:'spor', col:4, row:'bottom', icon:'🏀', desc:'Kapalı spor salonu.' }
     ]
   },
   1: {
     name: '1. Kat',
     rooms: [
-      { id:'s103', name:'103 Sınıf', cat:'sinif', col:0, row:'top', icon:'📚',
-        desc:'6-A sınıfı dersliği.' },
-      { id:'s104', name:'104 Sınıf', cat:'sinif', col:1, row:'top', icon:'📚',
-        desc:'6-B sınıfı dersliği.' },
-      { id:'s105', name:'105 Sınıf', cat:'sinif', col:2, row:'top', icon:'📚',
-        desc:'7-A sınıfı dersliği.' },
-      { id:'ogretmenler', name:'Öğretmenler Odası', cat:'idari', col:3, row:'top', icon:'☕',
-        desc:'Öğretmenler için dinlenme ve toplantı alanı.' },
-      { id:'bilisim', name:'Bilişim Sınıfı', cat:'sinif', col:4, row:'top', icon:'💻',
-        desc:'Bilgisayar laboratuvarı. Bilişim teknolojileri dersleri burada işleniyor.' },
+      { id:'s10a', name:'10/A Sınıfı', cat:'sinif', col:0, row:'top', icon:'📚', desc:'1. kat sınıfı.' },
+      { id:'s10b', name:'10/B Sınıfı', cat:'sinif', col:1, row:'top', icon:'📚', desc:'Excel krokinde belirtilen 10/B sınıfı.' },
+      { id:'s11a', name:'11/A Sınıfı', cat:'sinif', col:2, row:'top', icon:'📚', desc:'1. kat sınıfı.' },
+      { id:'s11b', name:'11/B Sınıfı', cat:'sinif', col:3, row:'top', icon:'📚', desc:'1. kat sınıfı.' },
+      { id:'fizik', name:'Fizik Lab.', cat:'lab', col:4, row:'top', icon:'🔬', desc:'Fizik laboratuvarı.' },
 
-      { id:'s106', name:'106 Sınıf', cat:'sinif', col:0, row:'bottom', icon:'📚',
-        desc:'7-B sınıfı dersliği.' },
-      { id:'s107', name:'107 Sınıf', cat:'sinif', col:1, row:'bottom', icon:'📚',
-        desc:'8-A sınıfı dersliği.' },
-      { id:'merdiven1', name:'Merdivenler', cat:'diger', col:2, row:'bottom', icon:'🪜',
-        desc:'Zemin kata iniş ve çıkış merdivenleri.' },
-      { id:'wc1', name:'WC', cat:'wc', col:3, row:'bottom', icon:'🚻',
-        desc:'Kız ve erkek tuvaletleri. 1. kat, ana koridor üzerinde.' },
-      { id:'konferans', name:'Konferans Salonu', cat:'diger', col:4, row:'bottom', icon:'🎤',
-        desc:'Toplantı, sunum ve etkinlik salonu. Yaklaşık 120 kişilik.' }
+      { id:'s9c', name:'9/C Sınıfı', cat:'sinif', col:0, row:'bottom', icon:'📚', desc:'1. kat sınıfı.' },
+      { id:'s9d', name:'9/D Sınıfı', cat:'sinif', col:1, row:'bottom', icon:'📚', desc:'1. kat sınıfı.' },
+      { id:'merdiven1', name:'Merdivenler', cat:'diger', col:2, row:'bottom', icon:'🪜', desc:'Katlar arası geçiş.' },
+      { id:'wc1', name:'WC', cat:'wc', col:3, row:'bottom', icon:'🚻', desc:'1. kat tuvaletleri.' },
+      { id:'konferans', name:'Konferans Salonu', cat:'diger', col:4, row:'bottom', icon:'🎤', desc:'Toplantı ve sunum salonu.' }
+    ]
+  },
+  2: {
+    name: '2. Kat',
+    rooms: [
+      { id:'s11c', name:'11/C Sınıfı', cat:'sinif', col:0, row:'top', icon:'📚', desc:'2. kat sınıfı.' },
+      { id:'kodlama', name:'Kodlama Atölyesi', cat:'lab', col:1, row:'top', icon:'💻', desc:'Excel krokinde belirtilen Kodlama Atölyesi.' },
+      { id:'kimya', name:'Kimya Lab.', cat:'lab', col:2, row:'top', icon:'⚗️', desc:'Kimya laboratuvarı.' },
+      { id:'biyoloji', name:'Biyoloji Lab.', cat:'lab', col:3, row:'top', icon:'🧬', desc:'Biyoloji laboratuvarı.' },
+      { id:'resim', name:'Resim Sınıfı', cat:'sinif', col:4, row:'top', icon:'🎨', desc:'Görsel sanatlar dersliği.' },
+
+      { id:'s12a', name:'12/A Sınıfı', cat:'sinif', col:0, row:'bottom', icon:'📚', desc:'2. kat sınıfı.' },
+      { id:'s12b', name:'12/B Sınıfı', cat:'sinif', col:1, row:'bottom', icon:'📚', desc:'2. kat sınıfı.' },
+      { id:'merdiven2', name:'Merdivenler', cat:'diger', col:2, row:'bottom', icon:'🪜', desc:'Katlar arası geçiş.' },
+      { id:'wc2', name:'WC', cat:'wc', col:3, row:'bottom', icon:'🚻', desc:'2. kat tuvaletleri.' },
+      { id:'muzik', name:'Müzik Sınıfı', cat:'sinif', col:4, row:'bottom', icon:'🎵', desc:'Müzik dersliği.' }
+    ]
+  },
+  3: {
+    name: '3. Kat',
+    rooms: [
+      { id:'s12c', name:'12/C Sınıfı', cat:'sinif', col:0, row:'top', icon:'📚', desc:'Excel krokinde belirtilen 12/C sınıfı.' },
+      { id:'s12d', name:'12/D Sınıfı', cat:'sinif', col:1, row:'top', icon:'📚', desc:'3. kat sınıfı.' },
+      { id:'tarih', name:'Tarih Sınıfı', cat:'sinif', col:2, row:'top', icon:'🏛️', desc:'Tarih dersliği.' },
+      { id:'cografya', name:'Coğrafya Sınıfı', cat:'sinif', col:3, row:'top', icon:'🌍', desc:'Coğrafya dersliği.' },
+      { id:'matematik', name:'Matematik Sınıfı', cat:'sinif', col:4, row:'top', icon:'📐', desc:'Matematik dersliği.' },
+
+      { id:'depo', name:'Depo', cat:'diger', col:0, row:'bottom', icon:'📦', desc:'Excel krokinde belirtilen Depo.' },
+      { id:'arsiv', name:'Arşiv', cat:'diger', col:1, row:'bottom', icon:'🗄️', desc:'Evrak arşivi.' },
+      { id:'merdiven3', name:'Merdivenler', cat:'diger', col:2, row:'bottom', icon:'🪜', desc:'Katlar arası geçiş.' },
+      { id:'wc3', name:'WC', cat:'wc', col:3, row:'bottom', icon:'🚻', desc:'3. kat tuvaletleri.' },
+      { id:'mezunlar', name:'Mezunlar Odası', cat:'idari', col:4, row:'bottom', icon:'🎓', desc:'Mezunlar derneği alanı.' }
     ]
   }
 };
@@ -354,9 +368,9 @@ function roomGeom(room) {
 }
 
 function findRoom(id) {
-  for (const f of [0, 1]) {
+  for (const f of Object.keys(FLOORS)) {
     const r = FLOORS[f].rooms.find(x => x.id === id);
-    if (r) return { room: r, floor: f };
+    if (r) return { room: r, floor: Number(f) };
   }
   return null;
 }
@@ -403,7 +417,7 @@ function renderMap() {
 
     s += `<g class="room${isDim ? ' dim' : ''}${isActive ? ' active' : ''}" data-id="${room.id}">`;
 
-    /* kapı boşluğu (odayı koridora bağlayan geçiş) */
+    /* kapı boşluğu */
     s += `<rect x="${g.cx - 24}" y="${g.door - 6}" width="48" height="12"
             rx="2" fill="${c.bg}"/>`;
 
@@ -467,22 +481,18 @@ function drawRoute() {
   if (pts && pts.length > 1) {
     const str = pts.map(p => p.join(',')).join(' ');
 
-    /* dış halo */
     s += `<polyline points="${str}" fill="none" stroke="#ffffff"
             stroke-width="13" stroke-linecap="round" stroke-linejoin="round"
             opacity=".95"/>`;
-    /* asıl çizgi */
     s += `<polyline points="${str}" fill="none" stroke="#f97316"
             stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"
             class="route-line"/>`;
 
-    /* Başlangıç noktası */
     const st = pts[0];
     s += `<circle cx="${st[0]}" cy="${st[1]}" r="9" fill="#22c55e"/>`;
     s += `<circle cx="${st[0]}" cy="${st[1]}" r="9" fill="#22c55e" opacity=".5" class="pulse"/>`;
     s += `<circle cx="${st[0]}" cy="${st[1]}" r="14" fill="none" stroke="#16a34a" stroke-width="2.5" opacity=".55"/>`;
 
-    /* Hedef noktası */
     const en = pts[pts.length - 1];
     s += `<circle cx="${en[0]}" cy="${en[1]}" r="16" fill="#f97316" opacity=".22"/>`;
     s += `<circle cx="${en[0]}" cy="${en[1]}" r="9" fill="#f97316" stroke="#fff" stroke-width="2.5"/>`;
@@ -494,79 +504,65 @@ function drawRoute() {
 function computeRoute(room, floorOfRoom) {
   const g = roomGeom(room);
 
-  /* Giriş holünün kendisi */
   if (room.id === 'giris') {
     return {
       floor0: dedupe([ENTRY, [500, 545]]),
-      floor1: null,
       steps: ['Ana girişten içeri girdiğinizde giriş holündesiniz.'],
       destFloor: 0
     };
   }
 
   const steps = ['Ana girişten içeri girin.'];
+  let route0 = null;
+  let routeOther = null;
 
-  if (floorOfRoom === 1) {
-    steps.push('Giriş holünün ortasındaki merdivenlerden 1. kata çıkın.');
-    steps.push('Merdivenlerden ana koridora çıkın.');
+  // Zemin kat için rota hesaplaması (girişten koridora)
+  route0 = dedupe([ENTRY, [500, CORRIDOR_Y]]);
+
+  if (floorOfRoom === 0) {
+    steps.push('Giriş holünden geçip ana koridora çıkın.');
+    const dx = g.cx - HUB_X;
+    if (Math.abs(dx) > 10) {
+      const m = Math.max(5, Math.round(Math.abs(dx) / 12));
+      steps.push(`Ana koridorda ${dx > 0 ? 'sağa' : 'sola'} dönün ve yaklaşık ${m} metre ilerleyin.`);
+    }
+    const side = room.row === 'top' ? (dx >= 0 ? 'solunuzda' : 'sağınızda') : (dx >= 0 ? 'sağınızda' : 'solunuzda');
+    steps.push(Math.abs(dx) <= 10 ? `${room.name} karşınızda olacak.` : `${room.name} ${side} kalacak. Kapısından girin.`);
+
+    route0.push([g.cx, CORRIDOR_Y], [g.cx, g.door], [g.cx, g.cy]);
+    route0 = dedupe(route0);
+
+    return { floor0: route0, steps, destFloor: 0 };
+  } 
+  else {
+    // 1, 2 veya 3. katlar için
+    steps.push(`Giriş holündeki merdivenlerden ${floorOfRoom}. kata çıkın.`);
+    steps.push(`${floorOfRoom}. kattaki ana koridora çıkın.`);
 
     const dx = g.cx - HUB_X;
     if (Math.abs(dx) > 10) {
       const m = Math.max(5, Math.round(Math.abs(dx) / 12));
       steps.push(`Ana koridorda ${dx > 0 ? 'sağa' : 'sola'} dönün ve yaklaşık ${m} metre ilerleyin.`);
     }
+    const side = room.row === 'top' ? (dx >= 0 ? 'solunuzda' : 'sağınızda') : (dx >= 0 ? 'sağınızda' : 'solunuzda');
+    steps.push(Math.abs(dx) <= 10 ? `${room.name} karşınızda olacak.` : `${room.name} ${side} kalacak. Kapısından girin.`);
 
-    const side = room.row === 'top'
-      ? (dx >= 0 ? 'solunuzda' : 'sağınızda')
-      : (dx >= 0 ? 'sağınızda' : 'solunuzda');
-
-    steps.push(Math.abs(dx) <= 10
-      ? `${room.name} karşınızda olacak. Kapısından girin.`
-      : `${room.name} ${side} kalacak. Kapısından girin.`);
-
-    return {
-      floor0: dedupe([ENTRY, [500, 545]]),
-      floor1: dedupe([
-        [500, 545],
-        [500, CORRIDOR_Y],
-        [g.cx, CORRIDOR_Y],
-        [g.cx, g.door],
-        [g.cx, g.cy]
-      ]),
-      steps,
-      destFloor: 1
-    };
-  }
-
-  /* Zemin kat hedefi */
-  steps.push('Giriş holünden geçip ana koridora çıkın.');
-
-  const dx = g.cx - HUB_X;
-  if (Math.abs(dx) > 10) {
-    const m = Math.max(5, Math.round(Math.abs(dx) / 12));
-    steps.push(`Ana koridorda ${dx > 0 ? 'sağa' : 'sola'} dönün ve yaklaşık ${m} metre ilerleyin.`);
-  }
-
-  const side = room.row === 'top'
-    ? (dx >= 0 ? 'solunuzda' : 'sağınızda')
-    : (dx >= 0 ? 'sağınızda' : 'solunuzda');
-
-  steps.push(Math.abs(dx) <= 10
-    ? `${room.name} karşınızda olacak. Kapısından girin.`
-    : `${room.name} ${side} kalacak. Kapısından girin.`);
-
-  return {
-    floor0: dedupe([
-      ENTRY,
+    // Üst kat rota çizimi
+    routeOther = dedupe([
+      [500, 545], // Merdiven çıkışı varsayımı
       [500, CORRIDOR_Y],
       [g.cx, CORRIDOR_Y],
       [g.cx, g.door],
       [g.cx, g.cy]
-    ]),
-    floor1: null,
-    steps,
-    destFloor: 0
-  };
+    ]);
+
+    return { 
+      floor0: route0, 
+      ['floor' + floorOfRoom]: routeOther, 
+      steps, 
+      destFloor: floorOfRoom 
+    };
+  }
 }
 
 /* =========================================================
@@ -620,15 +616,9 @@ function openRoom(id, floorOfRoom) {
     syncFloorTabs();
     renderMap();
     showSteps(route.steps);
-    showBanner(route.destFloor === 1
-      ? 'Yol tarifi aktif · Hedef 1. katta'
-      : 'Yol tarifi aktif');
+    showBanner(route.destFloor > 0 ? `Yol tarifi aktif · Hedef ${route.destFloor}. katta` : 'Yol tarifi aktif');
 
-    /* Alt paneli biraz aşağı kaydırıp adımları göster */
-    setTimeout(() => {
-      const box = $('stepsBox');
-      if (box) sheet.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 60);
+    setTimeout(() => { if (sheet) sheet.scrollTo({ top: 0, behavior: 'smooth' }); }, 60);
   });
 
   sheet.classList.add('open');
@@ -672,20 +662,31 @@ $('bannerClose').addEventListener('click', () => {
 });
 
 /* =========================================================
-   9. KAT SEKMELERİ
+   9. KAT SEKMELERİ (Dinamik)
    ========================================================= */
+const floorTabsEl = $('floorTabs');
+
+function buildFloorTabs() {
+  let html = '';
+  for (const f in FLOORS) {
+    html += `<button data-floor="${f}" class="${Number(f) === floor ? 'active' : ''}">${FLOORS[f].name}</button>`;
+  }
+  floorTabsEl.innerHTML = html;
+
+  floorTabsEl.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      floor = Number(b.dataset.floor);
+      syncFloorTabs();
+      renderMap();
+    });
+  });
+}
+
 function syncFloorTabs() {
-  document.querySelectorAll('#floorTabs button').forEach(b => {
+  floorTabsEl.querySelectorAll('button').forEach(b => {
     b.classList.toggle('active', Number(b.dataset.floor) === floor);
   });
 }
-document.querySelectorAll('#floorTabs button').forEach(b => {
-  b.addEventListener('click', () => {
-    floor = Number(b.dataset.floor);
-    syncFloorTabs();
-    renderMap();
-  });
-});
 
 /* =========================================================
    10. FİLTRE ÇİPİLERİ
@@ -694,7 +695,7 @@ const chipsEl = $('chips');
 
 function buildChips() {
   const used = new Set();
-  [0, 1].forEach(f => FLOORS[f].rooms.forEach(r => used.add(r.cat)));
+  Object.values(FLOORS).forEach(f => f.rooms.forEach(r => used.add(r.cat)));
 
   let html = `<button class="chip active" data-cat="">Tümü</button>`;
   Object.keys(CATS).forEach(key => {
@@ -727,12 +728,12 @@ function doSearch() {
   if (!q) { resultsEl.hidden = true; resultsEl.innerHTML = ''; return; }
 
   const hits = [];
-  [0, 1].forEach(f => {
+  for (const f in FLOORS) {
     FLOORS[f].rooms.forEach(r => {
       const hay = (r.name + ' ' + r.desc).toLowerCase();
-      if (hay.includes(q)) hits.push({ room: r, floor: f });
+      if (hay.includes(q)) hits.push({ room: r, floor: Number(f) });
     });
-  });
+  }
 
   if (!hits.length) {
     resultsEl.innerHTML = `<div class="result" style="cursor:default;color:#94a3b8">
@@ -776,7 +777,7 @@ clearBtn.addEventListener('click', () => {
    12. BAŞLAT
    ========================================================= */
 buildChips();
-syncFloorTabs();
+buildFloorTabs();
 renderMap();
 </script>
 </body>
