@@ -43,7 +43,7 @@
   .floor-tabs button.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 8px 20px -10px rgba(79,70,229,1)}
   .map-wrap{max-width:1000px;margin:0 auto;padding:8px;background:var(--surface);border-radius:var(--radius);margin-left:16px;margin-right:16px;box-shadow:0 1px 2px rgba(15,23,42,.06),0 14px 40px -20px rgba(15,23,42,.35)}
   @media(min-width:1032px){.map-wrap{margin-left:auto;margin-right:auto}}
-  #map{display:block;width:100%;height:auto;border-radius:12px}
+  #map{display:block;width:100%;height:auto;border-radius:12px;background:#f8fafc}
   .room{cursor:pointer}
   .room rect{transition:filter .18s,opacity .18s}
   .room:hover rect{filter:brightness(.95)}
@@ -102,7 +102,7 @@
 <div class="floor-tabs" id="floorTabs"></div>
 
 <div class="map-wrap">
-  <svg id="map" viewBox="0 0 1050 800" preserveAspectRatio="xMidYMid meet"></svg>
+  <svg id="map" viewBox="0 0 1100 800" preserveAspectRatio="xMidYMid meet"></svg>
 </div>
 
 <div class="banner" id="banner" hidden>
@@ -121,7 +121,7 @@
 
 <script>
 /* =========================================================
-   1. VERİ (Excel Hücrelerine Göre Piksel Piksel Eşleme)
+   1. VERİ (Excel Hücrelerine Birebir Uyumlu)
    ========================================================= */
 const CATS = {
   sinif:     { label:'Sınıflar',   bg:'#dbeafe', bd:'#bfdbfe', tx:'#1e40af' },
@@ -133,127 +133,127 @@ const CATS = {
   diger:     { label:'Diğer',      bg:'#f1f5f9', bd:'#e2e8f0', tx:'#475569' }
 };
 
-const GIRIS_NOKTASI = [580, 770]; 
-const KAT1_MERDIVEN = [640, 420]; 
-const KAT2_MERDIVEN = [550, 420]; 
-const KAT3_MERDIVEN = [460, 420]; 
+const GIRIS_NOKTASI = [640, 740]; 
+const KAT1_MERDIVEN = [710, 420]; 
+const KAT2_MERDIVEN = [630, 420]; 
+const KAT3_MERDIVEN = [530, 420]; 
 
-// Odaların koordinatları Excel'deki çizgiler referans alınarak sıfırdan ayarlandı.
+// Odalar arasında göze hoş gelen 3 birimlik bir duvar boşluğu bırakıldı. 
+// Koordinatlar görsellerdeki genişliklere tam oturacak şekilde ayarlandı.
 const FLOORS = {
   0: {
     name: 'Zemin Kat',
     rooms: [
-      // Sol Üst
-      { id:'merdiven_sol_ust', name:'Yan Giriş Merdiveni', cat:'diger', x:30, y:100, w:40, h:250, doorX:70, doorY:225, icon:'🪜', isVertical:true, desc:'Sol yan giriş merdiveni.' },
-      { id:'tuvalet_2004', name:'Tuvalet (2004)', cat:'wc', x:70, y:100, w:70, h:100, doorX:105, doorY:200, icon:'🚻', desc:'Sol üst tuvalet.' },
-      { id:'tuvalet_2003', name:'Tuvalet (2003)', cat:'wc', x:140, y:100, w:70, h:100, doorX:175, doorY:200, icon:'🚻', desc:'Sol üst tuvalet.' },
-      // Sol Alt
-      { id:'engelli_giris', name:'Engelli Girişi', cat:'diger', x:30, y:420, w:80, h:300, doorX:70, doorY:570, icon:'♿', isVertical:true, desc:'Engelli öğrenciler için özel giriş.' },
-      { id:'fizik', name:'Fizik Lab. (2002)', cat:'lab', x:110, y:420, w:150, h:300, doorX:185, doorY:420, icon:'🔬', desc:'Fizik Laboratuvarı.' },
-      { id:'11e', name:'11/E Sınıfı', cat:'sinif', x:260, y:420, w:150, h:300, doorX:335, doorY:420, icon:'📚', desc:'11/E Sınıfı dersliği.' },
+      // Sol Taraf
+      { id:'merdiven_sol_ust', name:'Yan Giriş Merdiveni', cat:'diger', x:40, y:80, w:45, h:270, doorX:85, doorY:215, icon:'🪜', isVertical:true, desc:'Sol yan giriş merdiveni.' },
+      { id:'tuvalet_2004', name:'Tuvalet (2004)', cat:'wc', x:85, y:80, w:65, h:110, doorX:117, doorY:190, icon:'🚻', desc:'Sol üst tuvalet.' },
+      { id:'tuvalet_2003', name:'Tuvalet (2003)', cat:'wc', x:150, y:80, w:65, h:110, doorX:182, doorY:190, icon:'🚻', desc:'Sol üst tuvalet.' },
+      { id:'engelli_giris', name:'Engelli Girişi', cat:'diger', x:40, y:460, w:60, h:310, doorX:70, doorY:615, icon:'♿', isVertical:true, desc:'Engelli öğrenciler için özel giriş.' },
+      { id:'fizik', name:'Fizik Lab. (2002)', cat:'lab', x:100, y:460, w:140, h:310, doorX:170, doorY:460, icon:'🔬', desc:'Fizik Laboratuvarı.' },
+      { id:'11e', name:'11/E Sınıfı', cat:'sinif', x:240, y:460, w:140, h:310, doorX:310, doorY:460, icon:'📚', desc:'11/E Sınıfı dersliği.' },
       
       // Orta Üst
-      { id:'kimya', name:'Kimya-Biyoloji Lab. (2005)', cat:'lab', x:70, y:200, w:310, h:150, doorX:225, doorY:350, icon:'⚗️', desc:'Kimya ve Biyoloji Laboratuvarı.' },
-      { id:'kantin', name:'Kantin (2006)', cat:'yemek', x:380, y:200, w:170, h:150, doorX:465, doorY:350, icon:'🍽️', desc:'Okul kantini.' },
+      { id:'kimya', name:'Kimya-Biyoloji Lab. (2005)', cat:'lab', x:85, y:190, w:330, h:160, doorX:250, doorY:350, icon:'⚗️', desc:'Kimya ve Biyoloji Laboratuvarı.' },
+      { id:'kantin', name:'Kantin (2006)', cat:'yemek', x:415, y:190, w:150, h:160, doorX:490, doorY:350, icon:'🍽️', desc:'Okul kantini.' },
       
       // Orta Alt
-      { id:'hizmetli', name:'Hizmetli Odası', cat:'diger', x:410, y:420, w:80, h:150, doorX:450, doorY:420, icon:'🧹', isVertical:true, desc:'Hizmetli personel odası.' },
-      { id:'merdiven_sol', name:'Merdivenler', cat:'diger', x:410, y:570, w:80, h:150, doorX:450, doorY:570, icon:'🪜', isVertical:true, desc:'Sol taraftaki ana merdivenler.' },
-      { id:'giris', name:'Okul Girişi', cat:'diger', x:490, y:620, w:180, h:100, doorX:580, doorY:720, icon:'🚪', desc:'Okulun ana giriş kapısı.' },
+      { id:'hizmetli', name:'Hizmetli Odası', cat:'diger', x:415, y:460, w:65, h:155, doorX:447, doorY:460, icon:'🧹', isVertical:true, desc:'Hizmetli personel odası.' },
+      { id:'merdiven_sol', name:'Merdivenler', cat:'diger', x:415, y:615, w:65, h:155, doorX:447, doorY:615, icon:'🪜', isVertical:true, desc:'Sol taraftaki ana merdivenler.' },
+      { id:'giris', name:'Okul Girişi', cat:'diger', x:510, y:660, w:260, h:110, doorX:640, doorY:770, icon:'🚪', desc:'Okulun ana giriş kapısı.' },
 
       // Sağ Üst
-      { id:'arsiv', name:'Arşiv (K)', cat:'diger', x:550, y:200, w:40, h:150, doorX:570, doorY:350, icon:'🗄️', isVertical:true, desc:'Arşiv odası.' },
-      { id:'tuvalet_2008', name:'Tuvalet (2008)', cat:'wc', x:590, y:200, w:50, h:150, doorX:615, doorY:350, icon:'🚻', desc:'Sağ üst tuvalet.' },
-      { id:'tuvalet_2007', name:'Tuvalet (2007)', cat:'wc', x:640, y:200, w:50, h:150, doorX:665, doorY:350, icon:'🚻', desc:'Sağ üst tuvalet.' },
-      { id:'kutuphane', name:'Kütüphane (2009)', cat:'kutuphane', x:550, y:100, w:140, h:100, doorX:620, doorY:200, icon:'📚', desc:'Okul kütüphanesi.' },
-      { id:'merdiven_sag_ust', name:'Yan Giriş Merdiveni', cat:'diger', x:720, y:100, w:90, h:250, doorX:765, doorY:225, icon:'🪜', isVertical:true, desc:'Sağ yan giriş merdiveni.' },
+      { id:'arsiv', name:'Arşiv (K)', cat:'diger', x:565, y:190, w:45, h:160, doorX:587, doorY:350, icon:'🗄️', isVertical:true, desc:'Arşiv odası.' },
+      { id:'tuvalet_2008', name:'Tuvalet (2008)', cat:'wc', x:610, y:190, w:50, h:160, doorX:635, doorY:350, icon:'🚻', desc:'Sağ üst tuvalet.' },
+      { id:'tuvalet_2007', name:'Tuvalet (2007)', cat:'wc', x:660, y:190, w:50, h:160, doorX:685, doorY:350, icon:'🚻', desc:'Sağ üst tuvalet.' },
+      { id:'kutuphane', name:'Kütüphane (2009)', cat:'kutuphane', x:565, y:80, w:145, h:110, doorX:637, doorY:190, icon:'📚', desc:'Okul kütüphanesi.' },
+      { id:'merdiven_sag_ust', name:'Yan Giriş Merdiveni', cat:'diger', x:710, y:80, w:80, h:270, doorX:750, doorY:215, icon:'🪜', isVertical:true, desc:'Sağ yan giriş merdiveni.' },
 
       // Sağ Alt
-      { id:'engelli_wc', name:'Engelli WC', cat:'wc', x:670, y:420, w:80, h:150, doorX:710, doorY:420, icon:'🚻', isVertical:true, desc:'Engelli tuvaleti.' },
-      { id:'merdiven_sag', name:'Merdivenler', cat:'diger', x:670, y:570, w:80, h:150, doorX:710, doorY:570, icon:'🪜', isVertical:true, desc:'Sağ taraftaki merdivenler.' },
-      { id:'mudur', name:'Müdür Odası (2011)', cat:'idari', x:750, y:420, w:150, h:300, doorX:825, doorY:420, icon:'🗂️', desc:'Okul müdürü odası.' },
-      { id:'kutuphane_ek', name:'Kütüphane Ek Oda', cat:'kutuphane', x:900, y:420, w:100, h:300, doorX:950, doorY:420, icon:'📖', desc:'Kütüphaneye bağlı ek çalışma odası.' }
+      { id:'engelli_wc', name:'Engelli WC', cat:'wc', x:710, y:460, w:70, h:155, doorX:745, doorY:460, icon:'🚻', isVertical:true, desc:'Engelli tuvaleti.' },
+      { id:'merdiven_sag', name:'Merdivenler', cat:'diger', x:710, y:615, w:70, h:155, doorX:745, doorY:615, icon:'🪜', isVertical:true, desc:'Sağ taraftaki merdivenler.' },
+      { id:'mudur', name:'Müdür Odası (2011)', cat:'idari', x:780, y:460, w:160, h:310, doorX:860, doorY:460, icon:'🗂️', desc:'Okul müdürü odası.' },
+      { id:'kutuphane_ek', name:'Kütüphane Ek Oda', cat:'kutuphane', x:940, y:460, w:110, h:310, doorX:995, doorY:460, icon:'📖', desc:'Kütüphaneye bağlı ek çalışma odası.' }
     ]
   },
   1: {
     name: '1. Kat',
     rooms: [
       // Üst Sıra
-      { id:'yangin_sol', name:'Yangın Merdiveni', cat:'diger', x:30, y:100, w:40, h:250, doorX:70, doorY:225, icon:'🪜', isVertical:true, desc:'Sol yangın merdiveni.' },
-      { id:'s9b', name:'9/B (K105)', cat:'sinif', x:70, y:200, w:180, h:150, doorX:160, doorY:350, icon:'📚', desc:'9/B Sınıfı.' },
-      { id:'s10d', name:'10/D (K106)', cat:'sinif', x:250, y:200, w:180, h:150, doorX:340, doorY:350, icon:'📚', desc:'10/D Sınıfı.' },
-      { id:'s10a', name:'10/A', cat:'sinif', x:430, y:200, w:150, h:150, doorX:505, doorY:350, icon:'📚', desc:'10/A Sınıfı.' },
-      { id:'wc_k109', name:'Tuvalet (K109)', cat:'wc', x:580, y:200, w:50, h:150, doorX:605, doorY:350, icon:'🚻', desc:'1. Kat Tuvalet.' },
-      { id:'wc_k110', name:'Tuvalet (K110)', cat:'wc', x:630, y:200, w:50, h:150, doorX:655, doorY:350, icon:'🚻', desc:'1. Kat Tuvalet.' },
-      { id:'s10c', name:'10/C', cat:'sinif', x:680, y:200, w:140, h:150, doorX:750, doorY:350, icon:'📚', desc:'10/C Sınıfı.' },
-      { id:'yangin_sag', name:'Yangın Merdiveni', cat:'diger', x:820, y:100, w:40, h:250, doorX:840, doorY:225, icon:'🪜', isVertical:true, desc:'Sağ yangın merdiveni.' },
+      { id:'yangin_sol', name:'Yangın Merdiveni', cat:'diger', x:40, y:80, w:45, h:270, doorX:85, doorY:215, icon:'🪜', isVertical:true, desc:'Sol yangın merdiveni.' },
+      { id:'s9b', name:'9/B (K105)', cat:'sinif', x:85, y:190, w:170, h:160, doorX:170, doorY:350, icon:'📚', desc:'9/B Sınıfı.' },
+      { id:'s10d', name:'10/D (K106)', cat:'sinif', x:255, y:190, w:170, h:160, doorX:340, doorY:350, icon:'📚', desc:'10/D Sınıfı.' },
+      { id:'s10a', name:'10/A', cat:'sinif', x:425, y:190, w:140, h:160, doorX:495, doorY:350, icon:'📚', desc:'10/A Sınıfı.' },
+      { id:'wc_k109', name:'Tuvalet (K109)', cat:'wc', x:565, y:190, w:55, h:160, doorX:592, doorY:350, icon:'🚻', desc:'1. Kat Tuvalet.' },
+      { id:'wc_k110', name:'Tuvalet (K110)', cat:'wc', x:620, y:190, w:55, h:160, doorX:647, doorY:350, icon:'🚻', desc:'1. Kat Tuvalet.' },
+      { id:'s10c', name:'10/C', cat:'sinif', x:675, y:190, w:130, h:160, doorX:740, doorY:350, icon:'📚', desc:'10/C Sınıfı.' },
+      { id:'yangin_sag', name:'Yangın Merdiveni', cat:'diger', x:805, y:80, w:45, h:270, doorX:850, doorY:215, icon:'🪜', isVertical:true, desc:'Sağ yangın merdiveni.' },
       
       // Alt Sıra
-      { id:'s9a', name:'9/A (K102)', cat:'sinif', x:30, y:420, w:180, h:300, doorX:120, doorY:420, icon:'📚', desc:'9/A Sınıfı.' },
-      { id:'s9c', name:'9/C (K101)', cat:'sinif', x:210, y:420, w:180, h:300, doorX:300, doorY:420, icon:'📚', desc:'9/C Sınıfı.' },
-      { id:'merdiven_1', name:'Merdivenler', cat:'diger', x:390, y:420, w:70, h:300, doorX:425, doorY:420, icon:'🪜', isVertical:true, desc:'1. Kat Merdivenleri.' },
-      { id:'santral', name:'Santral (K117)', cat:'idari', x:460, y:420, w:40, h:300, doorX:480, doorY:420, icon:'☎️', isVertical:true, desc:'Santral Odası.' },
-      { id:'mudur_basyard', name:'Müdür Başyard.', cat:'idari', x:500, y:420, w:50, h:300, doorX:525, doorY:420, icon:'🗂️', isVertical:true, desc:'Müdür Başyardımcısı Odası.' },
-      { id:'bt_rehber', name:'BT Rehber', cat:'idari', x:550, y:420, w:50, h:300, doorX:575, doorY:420, icon:'💻', isVertical:true, desc:'BT Rehber Öğretmeni Odası.' },
-      { id:'merdiven_2', name:'Merdivenler', cat:'diger', x:600, y:420, w:70, h:300, doorX:635, doorY:420, icon:'🪜', isVertical:true, desc:'1. Kat Merdivenleri.' },
-      { id:'rehber_ogrt', name:'Rehber Öğrt.', cat:'idari', x:670, y:420, w:50, h:300, doorX:695, doorY:420, icon:'🧠', isVertical:true, desc:'Rehber Öğretmen Odası.' },
-      { id:'teknisyen', name:'Teknisyen', cat:'diger', x:720, y:420, w:50, h:300, doorX:745, doorY:420, icon:'🔧', isVertical:true, desc:'Teknisyen Odası.' },
-      { id:'jba', name:'Jb/a', cat:'diger', x:770, y:420, w:60, h:300, doorX:800, doorY:420, icon:'⚙️', desc:'Jb/a Odası.' },
-      { id:'test_odasi', name:'Test Odası', cat:'sinif', x:830, y:420, w:100, h:300, doorX:880, doorY:420, icon:'📝', desc:'Test Odası.' }
+      { id:'s9a', name:'9/A (K102)', cat:'sinif', x:40, y:460, w:160, h:310, doorX:120, doorY:460, icon:'📚', desc:'9/A Sınıfı.' },
+      { id:'s9c', name:'9/C (K101)', cat:'sinif', x:200, y:460, w:170, h:310, doorX:285, doorY:460, icon:'📚', desc:'9/C Sınıfı.' },
+      { id:'merdiven_1', name:'Merdivenler', cat:'diger', x:370, y:460, w:65, h:310, doorX:402, doorY:460, icon:'🪜', isVertical:true, desc:'1. Kat Merdivenleri (Sol).' },
+      { id:'santral', name:'Santral (K117)', cat:'idari', x:435, y:460, w:45, h:310, doorX:457, doorY:460, icon:'☎️', isVertical:true, desc:'Santral Odası.' },
+      { id:'mudur_basyard', name:'Müdür Başyard.', cat:'idari', x:480, y:460, w:45, h:310, doorX:502, doorY:460, icon:'🗂️', isVertical:true, desc:'Müdür Başyardımcısı Odası.' },
+      { id:'bt_rehber', name:'BT Rehber', cat:'idari', x:525, y:460, w:45, h:310, doorX:547, doorY:460, icon:'💻', isVertical:true, desc:'BT Rehber Öğretmeni Odası.' },
+      { id:'merdiven_2', name:'Merdivenler', cat:'diger', x:570, y:460, w:65, h:310, doorX:602, doorY:460, icon:'🪜', isVertical:true, desc:'1. Kat Merdivenleri (Sağ).' },
+      { id:'rehber_ogrt', name:'Rehber Öğrt.', cat:'idari', x:635, y:460, w:45, h:310, doorX:657, doorY:460, icon:'🧠', isVertical:true, desc:'Rehber Öğretmen Odası.' },
+      { id:'teknisyen', name:'Teknisyen', cat:'diger', x:680, y:460, w:45, h:310, doorX:702, doorY:460, icon:'🔧', isVertical:true, desc:'Teknisyen Odası.' },
+      { id:'jba', name:'Jb/a', cat:'diger', x:725, y:460, w:60, h:310, doorX:755, doorY:460, icon:'⚙️', desc:'Jb/a Odası.' },
+      { id:'test_odasi', name:'Test Odası', cat:'sinif', x:785, y:460, w:100, h:310, doorX:835, doorY:460, icon:'📝', desc:'Test Odası.' }
     ]
   },
   2: {
     name: '2. Kat',
     rooms: [
       // Üst Sıra
-      { id:'yangin_sol_2', name:'Yangın Merdiveni', cat:'diger', x:30, y:100, w:40, h:250, doorX:70, doorY:225, icon:'🪜', isVertical:true, desc:'2. Kat sol yangın merdiveni.' },
-      { id:'wc_k203', name:'Tuvalet (K203)', cat:'wc', x:70, y:200, w:60, h:150, doorX:100, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
-      { id:'wc_k204', name:'Tuvalet (K204)', cat:'wc', x:130, y:200, w:60, h:150, doorX:160, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
-      { id:'memur', name:'MEMUR', cat:'idari', x:190, y:200, w:80, h:150, doorX:230, doorY:350, icon:'🗂️', desc:'Memur Odası.' },
-      { id:'kodlama', name:'Kodlama Atölyesi', cat:'lab', x:270, y:200, w:80, h:150, doorX:310, doorY:350, icon:'💻', desc:'Kodlama Atölyesi.' },
-      { id:'ogretmenler', name:'Öğretmenler Odası', cat:'idari', x:350, y:200, w:170, h:150, doorX:435, doorY:350, icon:'☕', desc:'Öğretmenler Odası.' },
-      { id:'wc_k208', name:'Tuvalet (K208)', cat:'wc', x:520, y:200, w:50, h:150, doorX:545, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
-      { id:'wc_k209', name:'Tuvalet (K209)', cat:'wc', x:570, y:200, w:50, h:150, doorX:595, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
-      { id:'s11a', name:'11/A', cat:'sinif', x:620, y:200, w:150, h:150, doorX:695, doorY:350, icon:'📚', desc:'11/A Sınıfı.' },
-      { id:'yangin_sag_2', name:'Yangın Merdiveni', cat:'diger', x:770, y:100, w:40, h:250, doorX:790, doorY:225, icon:'🪜', isVertical:true, desc:'2. Kat sağ yangın merdiveni.' },
+      { id:'yangin_sol_2', name:'Yangın Merdiveni', cat:'diger', x:40, y:80, w:45, h:270, doorX:85, doorY:215, icon:'🪜', isVertical:true, desc:'2. Kat sol yangın merdiveni.' },
+      { id:'wc_k203', name:'Tuvalet (K203)', cat:'wc', x:85, y:190, w:50, h:160, doorX:110, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
+      { id:'wc_k204', name:'Tuvalet (K204)', cat:'wc', x:135, y:190, w:50, h:160, doorX:160, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
+      { id:'memur', name:'MEMUR', cat:'idari', x:185, y:190, w:85, h:160, doorX:227, doorY:350, icon:'🗂️', desc:'Memur Odası.' },
+      { id:'kodlama', name:'Kodlama Atölyesi', cat:'lab', x:270, y:190, w:85, h:160, doorX:312, doorY:350, icon:'💻', desc:'Kodlama Atölyesi.' },
+      { id:'ogretmenler', name:'Öğretmenler Odası', cat:'idari', x:355, y:190, w:180, h:160, doorX:445, doorY:350, icon:'☕', desc:'Öğretmenler Odası.' },
+      { id:'wc_k208', name:'Tuvalet (K208)', cat:'wc', x:535, y:190, w:50, h:160, doorX:560, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
+      { id:'wc_k209', name:'Tuvalet (K209)', cat:'wc', x:585, y:190, w:50, h:160, doorX:610, doorY:350, icon:'🚻', desc:'2. Kat Tuvalet.' },
+      { id:'s11a', name:'11/A', cat:'sinif', x:635, y:190, w:140, h:160, doorX:705, doorY:350, icon:'📚', desc:'11/A Sınıfı.' },
+      { id:'yangin_sag_2', name:'Yangın Merdiveni', cat:'diger', x:775, y:80, w:45, h:270, doorX:820, doorY:215, icon:'🪜', isVertical:true, desc:'2. Kat sağ yangın merdiveni.' },
 
       // Alt Sıra
-      { id:'s11d', name:'11/D', cat:'sinif', x:30, y:420, w:150, h:300, doorX:105, doorY:420, icon:'📚', desc:'11/D Sınıfı.' },
-      { id:'s11c', name:'11/C', cat:'sinif', x:180, y:420, w:170, h:300, doorX:265, doorY:420, icon:'📚', desc:'11/C Sınıfı.' },
-      { id:'merdiven_1_2', name:'Merdivenler', cat:'diger', x:350, y:420, w:70, h:300, doorX:385, doorY:420, icon:'🪜', isVertical:true, desc:'2. Kat Merdivenleri.' },
-      { id:'idare_odasi', name:'İdare Odası', cat:'idari', x:420, y:420, w:50, h:300, doorX:445, doorY:420, icon:'🗂️', isVertical:true, desc:'İdare Odası.' },
-      { id:'rehim', name:'REHİM', cat:'idari', x:470, y:420, w:50, h:300, doorX:495, doorY:420, icon:'🧠', isVertical:true, desc:'Rehberlik Odası.' },
-      { id:'merdiven_2_2', name:'Merdivenler', cat:'diger', x:520, y:420, w:70, h:300, doorX:555, doorY:420, icon:'🪜', isVertical:true, desc:'2. Kat Merdivenleri.' },
-      { id:'toren_odasi', name:'Tören Odası', cat:'diger', x:590, y:420, w:50, h:300, doorX:615, doorY:420, icon:'🎤', isVertical:true, desc:'Tören Odası.' },
-      { id:'veli_gorusme', name:'Veli Görüşme', cat:'idari', x:640, y:420, w:50, h:300, doorX:665, doorY:420, icon:'🤝', isVertical:true, desc:'Veli Görüşme Odası.' },
-      { id:'s11b', name:'11/B', cat:'sinif', x:690, y:420, w:100, h:300, doorX:740, doorY:420, icon:'📚', desc:'11/B Sınıfı.' },
-      { id:'bilgisayar', name:'Bilgisayar Atöl.', cat:'lab', x:790, y:420, w:80, h:300, doorX:830, doorY:420, icon:'🖥️', isVertical:true, desc:'Bilgisayar Atölyesi.' }
+      { id:'s11d', name:'11/D', cat:'sinif', x:40, y:460, w:130, h:310, doorX:105, doorY:460, icon:'📚', desc:'11/D Sınıfı.' },
+      { id:'s11c', name:'11/C', cat:'sinif', x:170, y:460, w:170, h:310, doorX:255, doorY:460, icon:'📚', desc:'11/C Sınıfı.' },
+      { id:'merdiven_1_2', name:'Merdivenler', cat:'diger', x:340, y:460, w:65, h:310, doorX:372, doorY:460, icon:'🪜', isVertical:true, desc:'2. Kat Merdivenleri (Sol).' },
+      { id:'idare_odasi', name:'İdare Odası', cat:'idari', x:405, y:460, w:55, h:310, doorX:432, doorY:460, icon:'🗂️', isVertical:true, desc:'İdare Odası.' },
+      { id:'rehim', name:'REHİM', cat:'idari', x:460, y:460, w:55, h:310, doorX:487, doorY:460, icon:'🧠', isVertical:true, desc:'Rehberlik Odası.' },
+      { id:'merdiven_2_2', name:'Merdivenler', cat:'diger', x:515, y:460, w:65, h:310, doorX:547, doorY:460, icon:'🪜', isVertical:true, desc:'2. Kat Merdivenleri (Sağ).' },
+      { id:'toren_odasi', name:'Tören Odası', cat:'diger', x:580, y:460, w:50, h:310, doorX:605, doorY:460, icon:'🎤', isVertical:true, desc:'Tören Odası.' },
+      { id:'veli_gorusme', name:'Veli Görüşme', cat:'idari', x:630, y:460, w:50, h:310, doorX:655, doorY:460, icon:'🤝', isVertical:true, desc:'Veli Görüşme Odası.' },
+      { id:'s11b', name:'11/B', cat:'sinif', x:680, y:460, w:100, h:310, doorX:730, doorY:460, icon:'📚', desc:'11/B Sınıfı.' },
+      { id:'bilgisayar', name:'Bilgisayar Atöl.', cat:'lab', x:780, y:460, w:70, h:310, doorX:815, doorY:460, icon:'🖥️', isVertical:true, desc:'Bilgisayar Atölyesi.' }
     ]
   },
   3: {
     name: '3. Kat',
     rooms: [
       // Üst Sıra
-      { id:'yangin_sol_3', name:'Yangın Merdiveni', cat:'diger', x:30, y:100, w:40, h:250, doorX:70, doorY:225, icon:'🪜', isVertical:true, desc:'3. Kat sol yangın merdiveni.' },
-      { id:'wc_k303', name:'Tuvalet (K303)', cat:'wc', x:70, y:200, w:60, h:150, doorX:100, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
-      { id:'wc_k304', name:'Tuvalet (K304)', cat:'wc', x:130, y:200, w:60, h:150, doorX:160, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
-      { id:'s12e', name:'12/E', cat:'sinif', x:190, y:200, w:150, h:150, doorX:265, doorY:350, icon:'📚', desc:'12/E Sınıfı.' },
-      { id:'s12a', name:'12/A', cat:'sinif', x:340, y:200, w:160, h:150, doorX:420, doorY:350, icon:'📚', desc:'12/A Sınıfı.' },
-      { id:'s12b', name:'12/B', cat:'sinif', x:500, y:200, w:140, h:150, doorX:570, doorY:350, icon:'📚', desc:'12/B Sınıfı.' },
-      { id:'wc_k308', name:'Tuvalet (K308)', cat:'wc', x:640, y:200, w:50, h:150, doorX:665, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
-      { id:'wc_k309', name:'Tuvalet (K309)', cat:'wc', x:690, y:200, w:50, h:150, doorX:715, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
-      { id:'s12d', name:'12/D', cat:'sinif', x:740, y:200, w:120, h:150, doorX:800, doorY:350, icon:'📚', desc:'12/D Sınıfı.' },
-      { id:'yangin_sag_3', name:'Yangın Merdiveni', cat:'diger', x:860, y:100, w:40, h:250, doorX:880, doorY:225, icon:'🪜', isVertical:true, desc:'3. Kat sağ yangın merdiveni.' },
+      { id:'yangin_sol_3', name:'Yangın Merdiveni', cat:'diger', x:40, y:80, w:45, h:270, doorX:85, doorY:215, icon:'🪜', isVertical:true, desc:'3. Kat sol yangın merdiveni.' },
+      { id:'wc_k303', name:'Tuvalet (K303)', cat:'wc', x:85, y:190, w:50, h:160, doorX:110, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
+      { id:'wc_k304', name:'Tuvalet (K304)', cat:'wc', x:135, y:190, w:50, h:160, doorX:160, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
+      { id:'s12e', name:'12/E', cat:'sinif', x:185, y:190, w:140, h:160, doorX:255, doorY:350, icon:'📚', desc:'12/E Sınıfı.' },
+      { id:'s12a', name:'12/A', cat:'sinif', x:325, y:190, w:150, h:160, doorX:400, doorY:350, icon:'📚', desc:'12/A Sınıfı.' },
+      { id:'s12b', name:'12/B', cat:'sinif', x:475, y:190, w:130, h:160, doorX:540, doorY:350, icon:'📚', desc:'12/B Sınıfı.' },
+      { id:'wc_k308', name:'Tuvalet (K308)', cat:'wc', x:605, y:190, w:50, h:160, doorX:630, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
+      { id:'wc_k309', name:'Tuvalet (K309)', cat:'wc', x:655, y:190, w:50, h:160, doorX:680, doorY:350, icon:'🚻', desc:'3. Kat Tuvalet.' },
+      { id:'s12d', name:'12/D', cat:'sinif', x:705, y:190, w:120, h:160, doorX:765, doorY:350, icon:'📚', desc:'12/D Sınıfı.' },
+      { id:'yangin_sag_3', name:'Yangın Merdiveni', cat:'diger', x:825, y:80, w:45, h:270, doorX:870, doorY:215, icon:'🪜', isVertical:true, desc:'3. Kat sağ yangın merdiveni.' },
 
       // Alt Sıra
-      { id:'depo_1', name:'Depo', cat:'diger', x:30, y:420, w:120, h:300, doorX:90, doorY:420, icon:'📦', desc:'Depo.' },
-      { id:'depo_2', name:'DEPO', cat:'diger', x:150, y:420, w:120, h:300, doorX:210, doorY:420, icon:'📦', desc:'Depo.' },
-      { id:'merdiven_1_3', name:'Merdivenler', cat:'diger', x:270, y:420, w:70, h:300, doorX:305, doorY:420, icon:'🪜', isVertical:true, desc:'3. Kat Merdivenleri.' },
-      { id:'gorsel_sanatlar', name:'Görsel Sanatlar', cat:'sinif', x:340, y:420, w:80, h:300, doorX:380, doorY:420, icon:'🎨', isVertical:true, desc:'Görsel Sanatlar Atölyesi.' },
-      { id:'merdiven_2_3', name:'Merdivenler', cat:'diger', x:420, y:420, w:70, h:300, doorX:455, doorY:420, icon:'🪜', isVertical:true, desc:'3. Kat Merdivenleri.' },
-      { id:'tarih_ogrt', name:'Tarih Öğr.', cat:'idari', x:490, y:420, w:50, h:300, doorX:515, doorY:420, icon:'🏛️', isVertical:true, desc:'Tarih Öğretmenleri Odası.' },
-      { id:'rehberlik_servisi', name:'Rehberlik', cat:'idari', x:540, y:420, w:50, h:300, doorX:565, doorY:420, icon:'🧠', isVertical:true, desc:'Rehberlik Servisi.' },
-      { id:'s12c', name:'12/C', cat:'sinif', x:590, y:420, w:170, h:300, doorX:675, doorY:420, icon:'📚', desc:'12/C Sınıfı.' }
+      { id:'depo_1', name:'Depo', cat:'diger', x:40, y:460, w:100, h:310, doorX:90, doorY:460, icon:'📦', desc:'Depo.' },
+      { id:'depo_2', name:'DEPO', cat:'diger', x:140, y:460, w:110, h:310, doorX:195, doorY:460, icon:'📦', desc:'Depo.' },
+      { id:'merdiven_1_3', name:'Merdivenler', cat:'diger', x:250, y:460, w:65, h:310, doorX:282, doorY:460, icon:'🪜', isVertical:true, desc:'3. Kat Merdivenleri (Sol).' },
+      { id:'gorsel_sanatlar', name:'Görsel Sanatlar', cat:'sinif', x:315, y:460, w:80, h:310, doorX:355, doorY:460, icon:'🎨', isVertical:true, desc:'Görsel Sanatlar Atölyesi.' },
+      { id:'merdiven_2_3', name:'Merdivenler', cat:'diger', x:395, y:460, w:65, h:310, doorX:427, doorY:460, icon:'🪜', isVertical:true, desc:'3. Kat Merdivenleri (Sağ).' },
+      { id:'tarih_ogrt', name:'Tarih Öğr.', cat:'idari', x:460, y:460, w:55, h:310, doorX:487, doorY:460, icon:'🏛️', isVertical:true, desc:'Tarih Öğretmenleri Odası.' },
+      { id:'rehberlik_servisi', name:'Rehberlik', cat:'idari', x:515, y:460, w:55, h:310, doorX:542, doorY:460, icon:'🧠', isVertical:true, desc:'Rehberlik Servisi.' },
+      { id:'s12c', name:'12/C', cat:'sinif', x:570, y:460, w:170, h:310, doorX:655, doorY:460, icon:'📚', desc:'12/C Sınıfı.' }
     ]
   }
 };
@@ -280,34 +280,39 @@ function dedupe(pts) {
   return pts.filter((p, i) => i === 0 || p[0] !== pts[i - 1][0] || p[1] !== pts[i - 1][1]);
 }
 
-// Odalara sığmayan yazıları akıllıca boyutlandıran ve alt satıra geçiren fonksiyon
+// Yazıları Odalara Sığdırma Algoritması
 function renderText(room, c, cx, cy) {
+    // Eğer oda çok dar ve uzunsa yazıyı dikey yaz
     if (room.isVertical) {
-        return `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="18" transform="translate(0, -30)">${room.icon}</text>
-                <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="800" fill="${c.tx}" transform="rotate(-90 ${cx} ${cy})">${room.name}</text>`;
+        return `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="18" transform="translate(0, -35)">${room.icon}</text>
+                <text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="800" fill="${c.tx}" transform="rotate(-90 ${cx} ${cy})">${room.name}</text>`;
     }
 
     const iconSize = room.w < 80 ? 14 : (room.w < 120 ? 18 : 24);
     let fontSize = 12;
-    if (room.w < 80) fontSize = 10;
-    else if (room.w < 120) fontSize = 11;
+    if (room.w < 70) fontSize = 10;
+    else if (room.w < 110) fontSize = 11;
 
-    // Eğer oda çok alçaksa (h < 120) ve yazı uzunsa
-    if (room.h < 120 && room.name.length > 10) {
-        const parts = room.name.split(' ');
-        return `<text x="${cx}" y="${cy - 15}" text-anchor="middle" font-size="${iconSize}">${room.icon}</text>
-                <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="10" font-weight="800" fill="${c.tx}">${parts[0]}</text>
-                <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="10" font-weight="800" fill="${c.tx}">${parts[1] || ''}</text>`;
+    // Eğer yazı sığmıyorsa ve odanın yüksekliği varsa alt satıra geç
+    if (room.h > 150 && room.name.length > 12) {
+        const words = room.name.split(' ');
+        let line1 = words[0];
+        let line2 = words.slice(1).join(' ') || '';
+        
+        return `<text x="${cx}" y="${cy - 25}" text-anchor="middle" font-size="${iconSize}">${room.icon}</text>
+                <text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="${fontSize}" font-weight="800" fill="${c.tx}">${line1}</text>
+                <text x="${cx}" y="${cy + 15}" text-anchor="middle" font-size="${fontSize}" font-weight="800" fill="${c.tx}">${line2}</text>`;
     }
 
+    // Normal tek satır
     let displayName = room.name;
     const maxChars = Math.floor(room.w / (fontSize * 0.55));
     if (displayName.length > maxChars) {
         displayName = displayName.substring(0, maxChars - 2) + '..';
     }
 
-    return `<text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="${iconSize}">${room.icon}</text>
-            <text x="${cx}" y="${cy + 12}" text-anchor="middle" font-size="${fontSize}" font-weight="800" fill="${c.tx}">${displayName}</text>`;
+    return `<text x="${cx}" y="${cy - 15}" text-anchor="middle" font-size="${iconSize}">${room.icon}</text>
+            <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="${fontSize}" font-weight="800" fill="${c.tx}">${displayName}</text>`;
 }
 
 /* =========================================================
@@ -318,14 +323,14 @@ function renderMap() {
   let s = '';
 
   // Bina dış duvarı
-  s += `<rect x="20" y="90" width="990" height="640" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="3.5"/>`;
+  s += `<rect x="30" y="70" width="1040" height="710" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="4"/>`;
   
-  // Koridorlar
-  s += `<rect x="490" y="350" width="180" height="300" fill="#eef2ff"/>`;
-  s += `<rect x="30" y="350" width="950" height="70" fill="#eef2ff"/>`;
+  // Koridorlar (Genişlikleri Excel'e göre orantılı)
+  s += `<rect x="505" y="350" width="270" height="310" fill="#eef2ff"/>`;
+  s += `<rect x="30" y="350" width="1040" height="110" fill="#eef2ff"/>`;
   
-  s += `<text x="580" y="520" font-size="14" font-weight="800" fill="#a5b4fc" transform="rotate(-90 580 520)" letter-spacing="4" opacity=".8">ANA KORİDOR</text>`;
-  s += `<text x="300" y="392" font-size="14" font-weight="800" fill="#a5b4fc" letter-spacing="4" opacity=".8">YATAY KORİDOR</text>`;
+  s += `<text x="640" y="530" font-size="16" font-weight="800" fill="#a5b4fc" transform="rotate(-90 640 530)" letter-spacing="6" opacity=".8">ANA KORİDOR</text>`;
+  s += `<text x="350" y="410" font-size="16" font-weight="800" fill="#a5b4fc" letter-spacing="6" opacity=".8">YATAY KORİDOR</text>`;
 
   // Odaları Çiz
   for (const room of f.rooms) {
@@ -335,13 +340,18 @@ function renderMap() {
 
     s += `<g class="room${isDim ? ' dim' : ''}${isActive ? ' active' : ''}" data-id="${room.id}">`;
     
-    // Oda Kutusu
-    s += `<rect x="${room.x}" y="${room.y}" width="${room.w}" height="${room.h}"
-            rx="2" fill="${c.bg}" stroke="${c.bd}" stroke-width="2"
+    // Odalar arası 3 birim duvar payı bırakıldı
+    const rx = room.x + 1.5;
+    const ry = room.y + 1.5;
+    const rw = room.w - 3;
+    const rh = room.h - 3;
+
+    s += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}"
+            rx="4" fill="${c.bg}" stroke="${c.bd}" stroke-width="2.5"
             ${isActive ? `stroke="${c.tx}"` : ''}/>`;
 
-    const cx = room.x + room.w / 2;
-    const cy = room.y + room.h / 2;
+    const cx = rx + rw / 2;
+    const cy = ry + rh / 2;
 
     // Yazıları ekle
     s += renderText(room, c, cx, cy);
@@ -369,16 +379,16 @@ function drawRoute() {
   if (pts && pts.length > 1) {
     const str = pts.map(p => p.join(',')).join(' ');
 
-    s += `<polyline points="${str}" fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>`;
-    s += `<polyline points="${str}" fill="none" stroke="#f97316" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" class="route-line"/>`;
+    s += `<polyline points="${str}" fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>`;
+    s += `<polyline points="${str}" fill="none" stroke="#f97316" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" class="route-line"/>`;
 
     const st = pts[0];
-    s += `<circle cx="${st[0]}" cy="${st[1]}" r="9" fill="#22c55e"/>`;
-    s += `<circle cx="${st[0]}" cy="${st[1]}" r="9" fill="#22c55e" opacity=".5" class="pulse"/>`;
+    s += `<circle cx="${st[0]}" cy="${st[1]}" r="10" fill="#22c55e"/>`;
+    s += `<circle cx="${st[0]}" cy="${st[1]}" r="10" fill="#22c55e" opacity=".5" class="pulse"/>`;
 
     const en = pts[pts.length - 1];
-    s += `<circle cx="${en[0]}" cy="${en[1]}" r="16" fill="#f97316" opacity=".22"/>`;
-    s += `<circle cx="${en[0]}" cy="${en[1]}" r="9" fill="#f97316" stroke="#fff" stroke-width="2.5"/>`;
+    s += `<circle cx="${en[0]}" cy="${en[1]}" r="18" fill="#f97316" opacity=".22"/>`;
+    s += `<circle cx="${en[0]}" cy="${en[1]}" r="10" fill="#f97316" stroke="#fff" stroke-width="3"/>`;
   }
   layer.innerHTML = s;
 }
@@ -393,20 +403,20 @@ function computeRoute(room, floorOfRoom) {
 
   if (floorOfRoom === 0) {
     const steps = ['Ana girişten içeri girin.'];
-    let route0 = [GIRIS_NOKTASI, [580, 500]]; 
+    let route0 = [GIRIS_NOKTASI, [640, 520], [640, 405]]; 
     let hedefX = room.doorX, hedefY = room.doorY;
 
-    if (hedefX < 490) steps.push('Ana koridordan sola dönün.');
-    else if (hedefX > 670) steps.push('Ana koridordan sağa dönün.');
+    if (hedefX < 505) steps.push('Ana koridordan sola dönün.');
+    else if (hedefX > 775) steps.push('Ana koridordan sağa dönün.');
     else steps.push('Ana koridorda ilerleyin.');
 
     if (hedefY < 350) {
       steps.push('Yatay koridora ulaşana kadar ilerleyin.');
-      route0.push([580, 385], [hedefX, 385], [hedefX, hedefY]);
-    } else if (hedefY >= 350 && hedefY < 420) {
-      route0.push([580, 385], [hedefX, 385], [hedefX, hedefY]);
+      route0.push([hedefX, 405], [hedefX, hedefY]);
+    } else if (hedefY >= 350 && hedefY < 460) {
+      route0.push([hedefX, 405], [hedefX, hedefY]);
     } else {
-      route0.push([hedefX, 500], [hedefX, hedefY]);
+      route0.push([hedefX, 520], [hedefX, hedefY]);
     }
 
     steps.push(`${room.name} kapısına ulaştınız.`);
@@ -415,7 +425,7 @@ function computeRoute(room, floorOfRoom) {
   } 
   else if (floorOfRoom === 1) {
     const steps = ['Ana girişten içeri girin.', 'Sağ taraftaki merdivenlere yönelin ve 1. kata çıkın.'];
-    const route0 = dedupe([GIRIS_NOKTASI, [580, 500], [640, 500], [640, 570]]);
+    const route0 = dedupe([GIRIS_NOKTASI, [640, 520], [745, 520], [745, 615]]);
     let route1 = [KAT1_MERDIVEN]; 
     
     if (room.doorY === 350) {
@@ -423,7 +433,7 @@ function computeRoute(room, floorOfRoom) {
       const dx = room.doorX - KAT1_MERDIVEN[0];
       if (dx > 10) steps.push('Sağa dönün.');
       else if (dx < -10) steps.push('Sola dönün.');
-      route1.push([KAT1_MERDIVEN[0], 385], [room.doorX, 385], [room.doorX, room.doorY]); 
+      route1.push([KAT1_MERDIVEN[0], 405], [room.doorX, 405], [room.doorX, room.doorY]); 
     } else {
       steps.push('Merdivenlerden çıkınca koridora girin.');
       const dx = room.doorX - KAT1_MERDIVEN[0];
@@ -437,8 +447,8 @@ function computeRoute(room, floorOfRoom) {
   }
   else if (floorOfRoom === 2) {
     const steps = ['Ana girişten içeri girin.', 'Sağdaki merdivenlerden 1. kata çıkın.', 'Aynı merdivenden 2. kata çıkın.'];
-    const route0 = dedupe([GIRIS_NOKTASI, [580, 500], [640, 500], [640, 570]]);
-    const route1 = dedupe([[640, 420], [640, 350], [550, 350], [550, 420]]);
+    const route0 = dedupe([GIRIS_NOKTASI, [640, 520], [745, 520], [745, 615]]);
+    const route1 = dedupe([[745, 460], [745, 405], [635, 405], [635, 460]]);
     let route2 = [KAT2_MERDIVEN]; 
     
     if (room.doorY === 350) {
@@ -446,7 +456,7 @@ function computeRoute(room, floorOfRoom) {
       const dx = room.doorX - KAT2_MERDIVEN[0];
       if (dx > 10) steps.push('Sağa dönün.');
       else if (dx < -10) steps.push('Sola dönün.');
-      route2.push([KAT2_MERDIVEN[0], 385], [room.doorX, 385], [room.doorX, room.doorY]); 
+      route2.push([KAT2_MERDIVEN[0], 405], [room.doorX, 405], [room.doorX, room.doorY]); 
     } else {
       steps.push('Merdivenlerden çıkınca koridora girin.');
       const dx = room.doorX - KAT2_MERDIVEN[0];
@@ -460,9 +470,9 @@ function computeRoute(room, floorOfRoom) {
   }
   else if (floorOfRoom === 3) {
     const steps = ['Ana girişten içeri girin.', 'Sağdaki merdivenlerden 1. kata çıkın.', '2. kata çıkın.', 'Son olarak 3. kata çıkın.'];
-    const route0 = dedupe([GIRIS_NOKTASI, [580, 500], [640, 500], [640, 570]]);
-    const route1 = dedupe([[640, 420], [640, 350], [550, 350], [550, 420]]);
-    const route2 = dedupe([[550, 420], [550, 350], [460, 350], [460, 420]]); 
+    const route0 = dedupe([GIRIS_NOKTASI, [640, 520], [745, 520], [745, 615]]);
+    const route1 = dedupe([[745, 460], [745, 405], [635, 405], [635, 460]]);
+    const route2 = dedupe([[635, 460], [635, 405], [530, 405], [530, 460]]); 
     let route3 = [KAT3_MERDIVEN]; 
     
     if (room.doorY === 350) {
@@ -470,7 +480,7 @@ function computeRoute(room, floorOfRoom) {
       const dx = room.doorX - KAT3_MERDIVEN[0];
       if (dx > 10) steps.push('Sağa dönün.');
       else if (dx < -10) steps.push('Sola dönün.');
-      route3.push([KAT3_MERDIVEN[0], 385], [room.doorX, 385], [room.doorX, room.doorY]); 
+      route3.push([KAT3_MERDIVEN[0], 405], [room.doorX, 405], [room.doorX, room.doorY]); 
     } else {
       steps.push('Merdivenlerden çıkınca koridora girin.');
       const dx = room.doorX - KAT3_MERDIVEN[0];
